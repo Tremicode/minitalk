@@ -5,113 +5,84 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/02 19:09:56 by ctremino          #+#    #+#             */
-/*   Updated: 2024/11/12 13:49:29 by ctremino         ###   ########.fr       */
+/*   Created: 2024/12/17 12:03:35 by ctremino          #+#    #+#             */
+/*   Updated: 2024/12/18 21:56:45 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-#include <string.h>  // Asegúrate de incluir esta cabecera
-
-
-void    send_bit (int pid, char bit)
+static void	ft_send_signal(pid_t pid, int sig)
 {
-
-    if(bit == '0')
-    {
-        kill(pid, SIGUSR1); 
-    }
-    else 
-    {
-        kill(pid, SIGUSR2);
-    }
-
-
-
+	// (only SIGUSR1 y SIGUSR2)
+	if (sig != SIGUSR1 && sig != SIGUSR2)
+	{
+		ft_putstr_fd("Error: wrong singnal!!. only SIGUSR1 and SIGUSR2 allowed.\n",
+			1);
+		exit(EXIT_FAILURE);
+	}
+	// Intentar enviar la señal al proceso
+	if (kill(pid, sig) == -1)
+	{
+		ft_putstr_fd("Error al intentar enviar la señal.\n", 1);
+		exit(EXIT_FAILURE);
+	}
 }
-
-void    send_character (int pid, char c)
+static void ft_send_message(pid_t pid, char *msg)
 {
-    int i = 7; // bit mas significativo 
+    unsigned char current_char; 
+    int bit_index; // Índice de los bits dentro del carácter (de 7 a 0)
 
-    while (i >= 0)
-    {
-        char bit = ( c >> i) & 1; // obtener bit
-        
-        if (bit)
-            send_bit(pid, '1'); /*send_bit(pid, bit ? '1' : '0'); // enviar bit */
-        else
-            send_bit(pid, '0');
-        usleep(100); // retraso para asegurar recepcion
-        i --;
-    }
     
-}
-
-void    send_string(int pid, const char *str)
-{
-    int index = 0;
-
-    while(str[index] != '\0')
+    while (*msg)
     {
-        send_character(pid, str[index]);
-        index ++;
+        current_char = *msg; 
+        bit_index = 7; // start bit más significativo (más a la izquierda)
+
+        // Enviamos 1 bit a la vez, de izquierda a derecha
+        while (bit_index >= 0)
+        {
+            // Comprobamos  el bit actual del carácter es 1 o 0
+            if (current_char & (1 << bit_index))
+                ft_send_signal(pid, SIGUSR1); // Si el bit es 1, SIGUSR1
+            else
+                ft_send_signal(pid, SIGUSR2); // Si el bit es 0,  SIGUSR2
+
+            usleep(1000); 
+
+            bit_index--; // (de izq a derecha)
+        }
+
+        msg++; 
     }
-    if (str[index] == '\0')
-        send_character(pid, str[index]);
 }
 
-int main (int argc, char **argv)
+
+
+int	main(int argc, char **argv)
 {
-   int main(int argc, char **argv) {
-    if (argc != 3) { 
-        ft_printf("Uso: %s <PID_SERVIDOR> <mensaje>\n", argv[0]);
-        return 1;
-    }
-    // Aquí continuarías con el resto de tu programa
-    return 0;
+	pid_t	process_pid;
+
+	
+	if (argc != 3)
+	{
+		write(1, "Wrong number of arguments, try again!\n", 37);
+		return (1);
+	}
+	// Convierte el PID de string a int usando atoi
+	process_pid = atoi(argv[1]);
+	// PID tiene que ser un valor positivo (no puede ser cero o negativo)
+	if (process_pid <= 0)
+	{
+		write(1, "You are not getting a valid PID!\n", 32);
+		return (1);
+	}
+	
+	write(1, "PID: ", 5);
+	ft_putnbr_fd(process_pid, 1); // Imprime el valor del PID
+	write(1, "\n", 1);            
+	// Llama a la función send_msg para enviar el mensaje
+	ft_send_message(process_pid, argv[2]);
+		
+	return (0);
 }
-     
-    
-    int server_pid = atoi(argv[1]);
-    const char *message = argv[2];
-
-    send_string(server_pid, message);
-    send_bit(server_pid, '\0'); // enviar un carácter especial para indicar el final*/
-
-    return 0;
-}
-
-
-
-
-
-
-
-
-/*#include "minitalk.c"
-
-
-In the "client.c"  check list
-
-file, you will...
-
-
-Write a program (main) in which the client takes two parameters/arguments
-
-
-The PID of the server to which it wants to send the message
-
-
-A message
-
-
-Encrypt the message (I did the encryption via bits)
-
-
-Send the message to the server (via its PID)
-
-
-Create a stop condition so that the server knows when it has finished receiving the message*/
-

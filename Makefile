@@ -1,47 +1,58 @@
-# Variables
-NAME_CLIENT = client
-NAME_SERVER = server
-CC = cc
-CFLAGS = -Wall -Wextra -Werror
+# Flags y nombres
+FLAG = -Werror -Wall -Wextra
+LIBFT = ./libft/libft.a
+CFILE_CLIENT = client.c
+CFILE_SERVER = server.c
+CFILE_C_BONUS = client_bonus.c
+CFILE_S_BONUS = server_bonus.c
+OFILE_CLIENT = client.o
+OFILE_SERVER = server.o
+OFILE_C_BONUS = client_bonus.o
+OFILE_S_BONUS = server_bonus.o
+CLIENT = client
+SERVER = server
+CLIENT_BONUS = client_bonus
+SERVER_BONUS = server_bonus
 
-# Directorio de cabeceras para el .h
-HEADER_DIR = ./includes
+# Objetivo principal
+all: $(LIBFT) $(CLIENT) $(SERVER)
 
-# Archivos fuente
-SRC_CLIENT = client.c
-SRC_SERVER = server.c
+# Compilación de la librería libft
+$(LIBFT):
+	$(MAKE) -C ./libft
 
-# Archivos objeto
-OBJ_CLIENT = $(SRC_CLIENT:.c=.o)
-OBJ_SERVER = $(SRC_SERVER:.c=.o)
+# Compilación del cliente y servidor
+$(CLIENT): $(OFILE_CLIENT)
+	gcc $(FLAG) -o $(CLIENT) $^ $(LIBFT)
 
-# Directorio de cabeceras para la compilacion
-CFLAGS += -I $(HEADER_DIR)
+$(SERVER): $(OFILE_SERVER)
+	gcc $(FLAG) -o $(SERVER) $^ $(LIBFT)
 
-# Compilación del cliente
-$(NAME_CLIENT): $(OBJ_CLIENT)
-	$(CC) $(CFLAGS) -o $(NAME_CLIENT) $(OBJ_CLIENT)
+# Regla general para generar archivos .o
+%.o : %.c
+	gcc $(FLAG) -c $< -o $@
 
-# Compilación del servidor
-$(NAME_SERVER): $(OBJ_SERVER)
-	$(CC) $(CFLAGS) -o $(NAME_SERVER) $(OBJ_SERVER)
+# Objetivo para bonus
+bonus: $(LIBFT) $(CLIENT_BONUS) $(SERVER_BONUS)
 
-# Compilación completa
-all: $(NAME_CLIENT) $(NAME_SERVER)
+# Compilación del cliente_bonus
+$(CLIENT_BONUS): $(OFILE_C_BONUS)
+	gcc $(FLAG) -o $(CLIENT_BONUS) $^ $(LIBFT)
 
-# Limpia archivos objeto
+# Compilación del servidor_bonus
+$(SERVER_BONUS): $(OFILE_S_BONUS)
+	gcc $(FLAG) -o $(SERVER_BONUS) $^ $(LIBFT)
+
+# Limpieza de archivos objeto y binarios
 clean:
-	@rm -f $(OBJ_CLIENT) $(OBJ_SERVER)
+	$(MAKE) clean -C ./libft
+	rm -rf $(OFILE_CLIENT) $(OFILE_SERVER) $(OFILE_C_BONUS) $(OFILE_S_BONUS)
 
-# Limpia archivos objeto y ejecutables
 fclean: clean
-	@rm -f $(NAME_CLIENT) $(NAME_SERVER)
+	$(MAKE) fclean -C ./libft
+	rm -f $(CLIENT) $(SERVER) $(CLIENT_BONUS) $(SERVER_BONUS)
 
-# Reconstrucción completa
+# Regenerar todo
 re: fclean all
 
-# Reglas de archivos
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re bonus
