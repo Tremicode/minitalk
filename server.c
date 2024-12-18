@@ -6,7 +6,7 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 18:36:13 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/19 00:00:33 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/19 00:42:38 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ static void	receive_message(int sig, siginfo_t *info, void *contest)
 	static char	buffer_char;
 
 	n_bit--;
-	(void)contest;
 	(void)info;
+	(void)contest;
 	if (sig == SIGUSR1)
 		buffer_char |= (1 << n_bit);
 	if (n_bit == 0)
@@ -77,7 +77,3 @@ int	main(void)
 		pause();
 	return (0);
 }
-
-
-
-

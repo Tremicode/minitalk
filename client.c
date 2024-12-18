@@ -6,7 +6,7 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/17 12:03:35 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/18 21:56:45 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/19 00:42:55 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,42 +28,34 @@ static void	ft_send_signal(pid_t pid, int sig)
 		exit(EXIT_FAILURE);
 	}
 }
-static void ft_send_message(pid_t pid, char *msg)
+static void	ft_send_message(pid_t pid, char *msg)
 {
-    unsigned char current_char; 
-    int bit_index; // Índice de los bits dentro del carácter (de 7 a 0)
+	unsigned char	current_char;
 
-    
-    while (*msg)
-    {
-        current_char = *msg; 
-        bit_index = 7; // start bit más significativo (más a la izquierda)
-
-        // Enviamos 1 bit a la vez, de izquierda a derecha
-        while (bit_index >= 0)
-        {
-            // Comprobamos  el bit actual del carácter es 1 o 0
-            if (current_char & (1 << bit_index))
-                ft_send_signal(pid, SIGUSR1); // Si el bit es 1, SIGUSR1
-            else
-                ft_send_signal(pid, SIGUSR2); // Si el bit es 0,  SIGUSR2
-
-            usleep(1000); 
-
-            bit_index--; // (de izq a derecha)
-        }
-
-        msg++; 
-    }
+	int bit_index; // Índice de los bits dentro del carácter (de 7 a 0)
+	while (*msg)
+	{
+		current_char = *msg;
+		bit_index = 7; // start bit más significativo (más a la izquierda)
+		// Enviamos 1 bit a la vez, de izquierda a derecha
+		while (bit_index >= 0)
+		{
+			// Comprobamos  el bit actual del carácter es 1 o 0
+			if (current_char & (1 << bit_index))
+				ft_send_signal(pid, SIGUSR1); // Si el bit es 1, SIGUSR1
+			else
+				ft_send_signal(pid, SIGUSR2); // Si el bit es 0,  SIGUSR2
+			usleep(1000);
+			bit_index--; // (de izq a derecha)
+		}
+		msg++;
+	}
 }
-
-
 
 int	main(int argc, char **argv)
 {
 	pid_t	process_pid;
 
-	
 	if (argc != 3)
 	{
 		write(1, "Wrong number of arguments, try again!\n", 37);
@@ -77,12 +69,10 @@ int	main(int argc, char **argv)
 		write(1, "You are not getting a valid PID!\n", 32);
 		return (1);
 	}
-	
 	write(1, "PID: ", 5);
 	ft_putnbr_fd(process_pid, 1); // Imprime el valor del PID
-	write(1, "\n", 1);            
+	write(1, "\n", 1);
 	// Llama a la función send_msg para enviar el mensaje
 	ft_send_message(process_pid, argv[2]);
-		
 	return (0);
 }
