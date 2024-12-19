@@ -6,7 +6,7 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/17 12:03:35 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/19 00:42:55 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/19 12:05:49 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ int	main(int argc, char **argv)
 
 	if (argc != 3)
 	{
-		write(1, "Wrong number of arguments, try again!\n", 37);
+		write(1, "Wrong number of arguments, try again! \n", 37);
 		return (1);
 	}
 	// Convierte el PID de string a int usando atoi

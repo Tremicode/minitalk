@@ -6,55 +6,51 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 18:36:13 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/19 00:42:38 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/19 12:45:48 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-static void	receive_message(int sig, siginfo_t *info, void *contest)
+static void	receive_message(int sig, siginfo_t *info, void *context)
 {
-	static int	n_bit = 8;
-	static char	buffer_char;
-
-	n_bit--;
-	(void)info;
-	(void)contest;
+	static int bits_left = 8;     // Contador de bits restantes
+	static char current_char = 0; // Carácter en construcción
+	(void)info;    // No usamos este parámetro
+	(void)context; // No usamos este parámetro
+	// Si recibimos SIGUSR1, encendemos el bit correspondiente
 	if (sig == SIGUSR1)
-		buffer_char |= (1 << n_bit);
-	if (n_bit == 0)
+		current_char |= (1 << --bits_left);
+	else
+		bits_left--;
+	// Cuando completamos los 8 bits, imprimimos el carácter
+	if (bits_left == 0)
 	{
-		ft_putchar_fd(buffer_char, 1);
-		buffer_char = 0;
-		n_bit = 8;
+		ft_putchar_fd(current_char, 1);
+		bits_left = 8;    // Reiniciamos contador de bits
+		current_char = 0; // Reiniciamos el carácter
 	}
 }
-
 static void	initsig(void)
 {
-	struct sigaction	start_signal;
+	struct sigaction	sa;
 
-	// Init la estructura sigaction
-	start_signal.sa_sigaction = receive_message;
-	// Establecemos la función que manejará las señales
-	start_signal.sa_flags = SA_SIGINFO;
-	// Indicamos que queremos información adicional sobre la señal
-	// Limpiamos la máscara de señales (no bloquea ninguna señal por defecto)
-	sigemptyset(&start_signal.sa_mask);
-	// Agregamos SIGUSR1 y SIGUSR2 a la máscara de señales
-	// Esto bloqueará esas señales mientras se esté manejando cualquier otra
-	sigaddset(&start_signal.sa_mask, SIGUSR1);
-	sigaddset(&start_signal.sa_mask, SIGUSR2);
-	// Registramos el manejador para SIGUSR1
-	if (sigaction(SIGUSR1, &start_signal, NULL) == -1)
+	// Configuramos la función que manejará las señales (receive_message)
+	sa.sa_sigaction = receive_message;
+	// Indicamos que queremos usar información adicional sobre la señal
+	sa.sa_flags = SA_SIGINFO;
+	// Limpiamos el conjunto de señales para no bloquear ninguna durante el manejo
+	sigemptyset(&sa.sa_mask);
+	// Registramos el manejador de señales para SIGUSR1
+	if (sigaction(SIGUSR1, &sa, NULL) == -1)
 	{
-		ft_putstr_fd("Error: Unable to handle SIGUSR1\n", 1);
+		ft_putstr_fd("Error configuring SIGUSR1\n", 1);
 		exit(EXIT_FAILURE);
 	}
-	// Registramos el manejador para SIGUSR2
-	if (sigaction(SIGUSR2, &start_signal, NULL) == -1)
+	// Registramos el manejador de señales para SIGUSR2
+	if (sigaction(SIGUSR2, &sa, NULL) == -1)
 	{
-		ft_putstr_fd("Error: Unable to handle SIGUSR2\n", 1);
+		ft_putstr_fd("Error configuring SIGUSR2\n", 1);
 		exit(EXIT_FAILURE);
 	}
 }
