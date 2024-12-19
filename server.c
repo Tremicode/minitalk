@@ -6,7 +6,7 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 18:36:13 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/19 14:07:41 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/19 14:31:42 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@ static void	handle_message(char current_char, char **message, int *length)
 {
 	char	*new_message;
 
-	new_message = malloc(*length + 2); // +1 nuevo carácter, +1 '\0'
+	new_message = malloc(*length + 2);
 	if (!new_message)
 		exit(EXIT_FAILURE);
 	if (*message)
-		memcpy(new_message, *message, *length); // Copiar contenido previo
+		memcpy(new_message, *message, *length);
 	new_message[*length] = current_char;
 	new_message[++(*length)] = '\0';
 	free(*message);
@@ -42,7 +42,7 @@ static void	receive_message(int sig, siginfo_t *info, void *context)
 		bits_left--;
 	if (bits_left == 0)
 	{
-		if (current_char == '\0') // Fin del mensaje
+		if (current_char == '\0')
 		{
 			write(1, message, length);
 			free(message);
@@ -60,15 +60,17 @@ static void	initsig(void)
 {
 	struct sigaction	sa;
 
-	// Configura la función que manejará las señales (receive_message)
 	sa.sa_sigaction = receive_message;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
-	// Registra los manejadores para SIGUSR1 y SIGUSR2
-	if (sigaction(SIGUSR1, &sa, NULL) == -1 || sigaction(SIGUSR2, &sa, NULL) ==
-		-1)
+	if (sigaction(SIGUSR1, &sa, NULL) == -1)
 	{
-		ft_putstr_fd("Error configuring signals\n", 1);
+		ft_putstr_fd("Error configuring SIGUSR1\n", 1);
+		exit(EXIT_FAILURE);
+	}
+	if (sigaction(SIGUSR2, &sa, NULL) == -1)
+	{
+		ft_putstr_fd("Error configuring SIGUSR2\n", 1);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -85,9 +87,9 @@ int	main(void)
 	}
 	initsig();
 	write(1, "PID: ", 5);
-	ft_putnbr_fd(process_pid, 1); // Imprime el PID del proceso
+	ft_putnbr_fd(process_pid, 1);
 	write(1, "\n", 1);
 	while (1)
-		pause(); // Espera señales indefinidamente
+		pause();
 	return (0);
 }
