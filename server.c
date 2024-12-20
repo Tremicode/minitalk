@@ -6,7 +6,7 @@
 /*   By: ctremino <ctremino@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 18:36:13 by ctremino          #+#    #+#             */
-/*   Updated: 2024/12/19 14:31:42 by ctremino         ###   ########.fr       */
+/*   Updated: 2024/12/20 16:50:59 by ctremino         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,15 @@ static void	handle_message(char current_char, char **message, int *length)
 	*message = new_message;
 }
 
+static void	print_newline(char **message, int *length)
+{
+	write(1, *message, *length);
+	free(*message);
+	*message = NULL;
+	*length = 0;
+	write(1, "\n", 1);
+}
+
 static void	receive_message(int sig, siginfo_t *info, void *context)
 {
 	static int	bits_left = 8;
@@ -44,10 +53,7 @@ static void	receive_message(int sig, siginfo_t *info, void *context)
 	{
 		if (current_char == '\0')
 		{
-			write(1, message, length);
-			free(message);
-			message = NULL;
-			length = 0;
+			print_newline(&message, &length);
 		}
 		else
 			handle_message(current_char, &message, &length);
